@@ -16,19 +16,19 @@ type builder struct {
 }
 
 var Builder = &builder{
-	logger: yx.NewLogger("Builder"),
+	logger: yx.NewLogger("httpsrv.Builder"),
 }
 
 // build server.
 // @param srv, dest http server.
 // @param cfg, the server config.
-func (b *builder) Build(srv *HttpServer, cfg *Config) {
+func (b *builder) Build(srv *Server, cfg *Config) {
 	for pattern, servCfg := range cfg.MapPatten2ServInfo {
 		b.parsePatternCfg(srv, pattern, servCfg)
 	}
 }
 
-func (b *builder) parsePatternCfg(srv *HttpServer, pattern string, servCfg *ServiceConf) {
+func (b *builder) parsePatternCfg(srv *Server, pattern string, servCfg *ServiceConf) {
 	s, ok := server.ServiceBinder.GetService(servCfg.Service)
 	if !ok {
 		b.logger.W("Not support pattern ", pattern)

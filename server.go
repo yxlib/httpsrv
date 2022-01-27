@@ -16,7 +16,7 @@ var (
 	ErrUnknownPattern = errors.New("unknown path pattern")
 )
 
-type HttpServer struct {
+type Server struct {
 	*server.Server
 	reader       Reader
 	writer       Writer
@@ -25,14 +25,14 @@ type HttpServer struct {
 	logger       *yx.Logger
 }
 
-func NewHttpServer(r Reader, w Writer, bAllowOrigin bool) *HttpServer {
-	return &HttpServer{
-		Server:       server.NewServer("HttpServer", nil),
+func NewServer(r Reader, w Writer, bAllowOrigin bool) *Server {
+	return &Server{
+		Server:       server.NewServer("httpsrv.Server", nil),
 		reader:       r,
 		writer:       w,
 		bAllowOrigin: bAllowOrigin,
-		ec:           yx.NewErrCatcher("HttpServer"),
-		logger:       yx.NewLogger("HttpServer"),
+		ec:           yx.NewErrCatcher("httpsrv.Server"),
+		logger:       yx.NewLogger("httpsrv.Server"),
 	}
 }
 
@@ -40,7 +40,7 @@ func NewHttpServer(r Reader, w Writer, bAllowOrigin bool) *HttpServer {
 // @param pattern, the http pattern.
 // @param mod, the module of the service.
 // @param srv, the service.
-func (s *HttpServer) Bind(pattern string, mod uint16, srv server.Service) {
+func (s *Server) Bind(pattern string, mod uint16, srv server.Service) {
 	s.AddService(srv, mod)
 	http.HandleFunc(pattern, s.handleFunc)
 }
@@ -48,11 +48,11 @@ func (s *HttpServer) Bind(pattern string, mod uint16, srv server.Service) {
 // Start the http server.
 // @param addr, the http address.
 // @return error, error.
-func (s *HttpServer) Start(addr string) error {
+func (s *Server) Start(addr string) error {
 	return http.ListenAndServe(addr, nil)
 }
 
-func (s *HttpServer) handleFunc(w http.ResponseWriter, req *http.Request) {
+func (s *Server) handleFunc(w http.ResponseWriter, req *http.Request) {
 	if !s.handleOrign(w, req) {
 		return
 	}
@@ -84,7 +84,7 @@ func (s *HttpServer) handleFunc(w http.ResponseWriter, req *http.Request) {
 	respResult = string(response.Payload)
 }
 
-func (s *HttpServer) handleOrign(w http.ResponseWriter, req *http.Request) bool {
+func (s *Server) handleOrign(w http.ResponseWriter, req *http.Request) bool {
 	if !s.bAllowOrigin {
 		return req.Method != "OPTIONS"
 	}
@@ -105,7 +105,7 @@ func (s *HttpServer) handleOrign(w http.ResponseWriter, req *http.Request) bool 
 	return true
 }
 
-func (s *HttpServer) createRequest(req *http.Request) (*server.Request, int, error) {
+func (s *Server) createRequest(req *http.Request) (*server.Request, int, error) {
 	var err error = nil
 	defer s.ec.DeferThrow("createRequest", &err)
 

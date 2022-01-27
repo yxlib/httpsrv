@@ -98,7 +98,7 @@ func TestHttpSrv(t *testing.T) {
 	d := &TestTokenDecoder{}
 	r := NewDefaultReader(d)
 	w := NewDefaultWriter()
-	s := NewHttpServer(r, w, CfgInst.IsAllowOrigin)
+	s := NewServer(r, w, CfgInst.IsAllowOrigin)
 	s.AddGlobalInterceptor(&server.JsonInterceptor{})
 	Builder.Build(s, CfgInst)
 

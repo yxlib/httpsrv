@@ -28,8 +28,8 @@ type DefaultWriter struct {
 
 func NewDefaultWriter() *DefaultWriter {
 	return &DefaultWriter{
-		ec:     yx.NewErrCatcher("DefaultWriter"),
-		logger: yx.NewLogger("DefaultWriter"),
+		ec:     yx.NewErrCatcher("httpsrv.DefaultWriter"),
+		logger: yx.NewLogger("httpsrv.DefaultWriter"),
 	}
 }
 

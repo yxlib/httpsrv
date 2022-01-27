@@ -46,8 +46,8 @@ type DefaultReader struct {
 func NewDefaultReader(decoder TokenDecoder) *DefaultReader {
 	return &DefaultReader{
 		decoder: decoder,
-		ec:      yx.NewErrCatcher("DefaultReader"),
-		logger:  yx.NewLogger("DefaultReader"),
+		ec:      yx.NewErrCatcher("httpsrv.DefaultReader"),
+		logger:  yx.NewLogger("httpsrv.DefaultReader"),
 	}
 }
 
