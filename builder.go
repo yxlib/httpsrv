@@ -23,7 +23,10 @@ var Builder = &builder{
 // @param srv, dest http server.
 // @param cfg, the server config.
 func (b *builder) Build(srv *Server, cfg *Config) {
+	mod := uint16(1)
 	for pattern, servCfg := range cfg.MapPatten2ServInfo {
+		servCfg.Mod = mod
+		mod++
 		b.parsePatternCfg(srv, pattern, servCfg)
 	}
 }
@@ -42,11 +45,16 @@ func (b *builder) parsePatternCfg(srv *Server, pattern string, servCfg *ServiceC
 func (b *builder) parseOprCfg(s server.Service, servCfg *ServiceConf) {
 	v := reflect.ValueOf(s)
 
+	cmd := uint16(1)
 	for opr, cfg := range servCfg.MapOpr2Cfg {
+		cfg.Cmd = cmd
+		cmd++
+
 		// proto
 		err := server.ProtoBinder.BindProto(servCfg.Mod, cfg.Cmd, cfg.Req, cfg.Resp)
 		if err != nil {
 			b.logger.W("not support operation ", opr)
+			continue
 		}
 
 		// processor
