@@ -28,6 +28,9 @@ func GenRegisterFileByCfg(srvCfg *Config, regFilePath string, regPackName string
 
 	defer f.Close()
 
+	f.WriteString("// This File auto generate by tool.\n")
+	f.WriteString("// Please do not modify.\n")
+	f.WriteString("// See httpsrv.GenRegisterFileByCfg().\n\n")
 	f.WriteString("package " + regPackName + "\n\n")
 	f.WriteString("import (\n")
 
@@ -56,6 +59,7 @@ func GenRegisterFileByCfg(srvCfg *Config, regFilePath string, regPackName string
 
 	f.WriteString(")\n\n")
 
+	f.WriteString("// Auto generate by tool.\n")
 	f.WriteString("func RegisterServices() {\n")
 
 	for pattern, servCfg := range srvCfg.MapPatten2ServInfo {
