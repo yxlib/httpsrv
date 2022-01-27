@@ -110,11 +110,14 @@ func (s *Server) createRequest(req *http.Request) (*server.Request, int, error) 
 	defer s.ec.DeferThrow("createRequest", &err)
 
 	pattern := req.URL.Path
+	s.logger.I("Pattern: ", pattern)
+
 	info, ok := CfgInst.MapPatten2ServInfo[pattern]
 	if !ok {
 		return nil, RESP_CODE_UNKNOWN_PATTERN, ErrUnknownPattern
 	}
 
+	s.logger.I("Module: ", info.Mod)
 	request, err := s.reader.ReadRequest(req, info)
 	if err != nil {
 		return nil, RESP_CODE_DECODE_FAILED, err

@@ -42,7 +42,7 @@ func (w *DefaultWriter) WriteResponse(writer http.ResponseWriter, respCode int, 
 
 	respResult = url.QueryEscape(respResult)
 	respData := CfgInst.CodeField + "=" + strconv.Itoa(respCode) + "&" + CfgInst.ResultField + "=" + string(respResult)
-	w.logger.D("raw data: ", respData)
+	w.logger.D("Response raw data: ", respData)
 	w.logger.D()
 
 	_, errWrite := writer.Write([]byte(respData))

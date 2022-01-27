@@ -61,7 +61,7 @@ func (r *DefaultReader) ReadRequest(req *http.Request, info *ServiceConf) (*serv
 		return nil, err
 	}
 
-	r.logger.D("raw data: ", reqData)
+	r.logger.D("Request raw data: ", reqData)
 
 	// parse query
 	val, err := url.ParseQuery(reqData)
@@ -70,6 +70,8 @@ func (r *DefaultReader) ReadRequest(req *http.Request, info *ServiceConf) (*serv
 	}
 
 	opr := val.Get(CfgInst.OprField)
+	r.logger.I("Operation: ", opr)
+
 	cfg, ok := info.MapOpr2Cfg[opr]
 	if !ok {
 		err = ErrNotSupportOpr
@@ -77,8 +79,9 @@ func (r *DefaultReader) ReadRequest(req *http.Request, info *ServiceConf) (*serv
 	}
 
 	cmd := cfg.Cmd
+	r.logger.I("Command: ", cmd)
 	token := val.Get(CfgInst.TokenField)
-	r.logger.D("unescape token: ", token)
+	r.logger.D("Unescape token: ", token)
 	connId, err := r.decoder.DecodeToken(token)
 	if err != nil {
 		return nil, err
@@ -92,7 +95,7 @@ func (r *DefaultReader) ReadRequest(req *http.Request, info *ServiceConf) (*serv
 
 	paramsStr := val.Get(CfgInst.ParamsField)
 	request.Payload = []byte(paramsStr)
-	r.logger.D("unescape data: ", paramsStr)
+	r.logger.D("Unescape data: ", paramsStr)
 
 	snoStr := val.Get(CfgInst.SerialNoField)
 	sno, err := strconv.ParseUint(snoStr, 10, 16)
