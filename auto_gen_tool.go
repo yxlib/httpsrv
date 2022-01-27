@@ -11,13 +11,16 @@ import (
 	"github.com/yxlib/yx"
 )
 
+func GenServiceRegisterFile(cfgPath string, regFilePath string, regPackName string) {
+	LoadConf(cfgPath)
+	GenRegisterFileByCfg(CfgInst, regFilePath, regPackName)
+}
+
 // Generate the service register file.
 // @param cfgPath, the config path.
 // @param regFilePath, the output register file.
 // @param regPackName, the package name of the file.
-func GenServiceRegisterFile(cfgPath string, regFilePath string, regPackName string) {
-	LoadConf(cfgPath)
-
+func GenRegisterFileByCfg(srvCfg *Config, regFilePath string, regPackName string) {
 	f, err := os.OpenFile(regFilePath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return
@@ -31,7 +34,7 @@ func GenServiceRegisterFile(cfgPath string, regFilePath string, regPackName stri
 	packSet := yx.NewSet(yx.SET_TYPE_OBJ)
 	packSet.Add("github.com/yxlib/server")
 
-	for _, servCfg := range CfgInst.MapPatten2ServInfo {
+	for _, servCfg := range srvCfg.MapPatten2ServInfo {
 		servStr := servCfg.Service
 		idx := strings.LastIndex(servStr, ".")
 		packSet.Add(servStr[:idx])
@@ -55,8 +58,10 @@ func GenServiceRegisterFile(cfgPath string, regFilePath string, regPackName stri
 
 	f.WriteString("func RegisterServices() {\n")
 
-	for pattern, servCfg := range CfgInst.MapPatten2ServInfo {
-		f.WriteString("    //===== " + pattern + " =====\n")
+	for pattern, servCfg := range srvCfg.MapPatten2ServInfo {
+		f.WriteString("    //===============================\n")
+		f.WriteString("    //        " + pattern + "\n")
+		f.WriteString("    //===============================\n")
 
 		servStr := servCfg.Service
 		idx := strings.LastIndex(servStr, "/")
