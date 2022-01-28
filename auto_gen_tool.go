@@ -12,7 +12,7 @@ import (
 )
 
 func GenServiceRegisterFile(cfgPath string, regFilePath string, regPackName string) {
-	LoadConf(cfgPath)
+	yx.LoadJsonConf(CfgInst, cfgPath, nil)
 	GenRegisterFileByCfg(CfgInst, regFilePath, regPackName)
 }
 

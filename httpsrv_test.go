@@ -90,7 +90,7 @@ func TestHttpSrv(t *testing.T) {
 	registerProtos()
 	registerServices()
 
-	err := LoadConf("cfg_template.json")
+	err := yx.LoadJsonConf(CfgInst, "cfg_template.json", nil)
 	if err != nil {
 		panic(err)
 	}
