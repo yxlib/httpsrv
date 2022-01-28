@@ -77,7 +77,7 @@ func (s *Server) handleFunc(w http.ResponseWriter, req *http.Request) {
 
 	// handle
 	response := server.NewResponse(request)
-	s.HandleHttpRequest(request, response)
+	err = s.HandleHttpRequest(request, response)
 
 	// result
 	respCode = int(response.Code)
