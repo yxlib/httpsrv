@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/yxlib/server"
 	"github.com/yxlib/yx"
@@ -64,7 +65,7 @@ func (r *DefaultReader) ReadRequest(req *http.Request, info *ServiceConf) (*serv
 	r.logger.D("Request raw data: ", reqData)
 
 	// parse query
-	val, err := url.ParseQuery(reqData)
+	val, err := ParseQuery(reqData)
 	if err != nil {
 		return nil, err
 	}
@@ -124,4 +125,41 @@ func (r *DefaultReader) getReqData(req *http.Request) (string, error) {
 	}
 
 	return reqData, nil
+}
+
+func ParseQuery(query string) (url.Values, error) {
+	var err error = nil
+	m := make(url.Values)
+
+	for query != "" {
+		key := query
+		if i := strings.IndexAny(key, "&;"); i >= 0 {
+			key, query = key[:i], key[i+1:]
+		} else {
+			query = ""
+		}
+		if key == "" {
+			continue
+		}
+		value := ""
+		if i := strings.Index(key, "="); i >= 0 {
+			key, value = key[:i], key[i+1:]
+		}
+		key, err1 := url.PathUnescape(key)
+		if err1 != nil {
+			if err == nil {
+				err = err1
+			}
+			continue
+		}
+		value, err1 = url.PathUnescape(value)
+		if err1 != nil {
+			if err == nil {
+				err = err1
+			}
+			continue
+		}
+		m[key] = append(m[key], value)
+	}
+	return m, err
 }

@@ -34,13 +34,13 @@ func NewDefaultWriter() *DefaultWriter {
 }
 
 func (w *DefaultWriter) WriteResponse(writer http.ResponseWriter, respCode int, respResult string, err error) {
-	writer.Header().Set("content-type", "x-www-form-urlencoded")
+	writer.Header().Set("content-type", "application/x-www-form-urlencoded")
 
 	if err != nil {
 		respResult = "\"" + err.Error() + "\""
 	}
 
-	respResult = url.QueryEscape(respResult)
+	respResult = url.PathEscape(respResult)
 	respData := CfgInst.CodeField + "=" + strconv.Itoa(respCode) + "&" + CfgInst.ResultField + "=" + string(respResult)
 	w.logger.D("Response raw data: ", respData)
 	w.logger.D()
