@@ -14,14 +14,14 @@
             "opr" :
             {
                 "test1" : {
+                    "handler" : "OnHandleCmd1",
                     "req" : "github.com/yxlib/httpsrv.Cmd1Request",
-                    "resp" : "github.com/yxlib/httpsrv.Cmd1Response",
-                    "handler" : "OnHandleCmd1"
+                    "resp" : "github.com/yxlib/httpsrv.Cmd1Response"
                 },
                 "test2" : {
+                    "handler" : "OnHandleCmd2",
                     "req" : "github.com/yxlib/httpsrv.Cmd2Request",
-                    "resp" : "github.com/yxlib/httpsrv.Cmd2Response",
-                    "handler" : "OnHandleCmd2"
+                    "resp" : "github.com/yxlib/httpsrv.Cmd2Response"
                 }
             }
         }

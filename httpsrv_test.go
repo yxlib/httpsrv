@@ -77,7 +77,7 @@ func registerServices() {
 type TestTokenDecoder struct {
 }
 
-func (d *TestTokenDecoder) DecodeToken(token string) (uint64, error) {
+func (d *TestTokenDecoder) DecodeToken(opr string, token string) (uint64, error) {
 	connId, err := strconv.ParseUint(token, 10, 64)
 	if err != nil {
 		return 0, err

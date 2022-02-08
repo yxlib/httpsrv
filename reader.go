@@ -26,7 +26,7 @@ type TokenDecoder interface {
 	// @param token, the token.
 	// @return uint64, an id which can mark a client.
 	// @return error, error.
-	DecodeToken(token string) (uint64, error)
+	DecodeToken(opr string, token string) (uint64, error)
 }
 
 type Reader interface {
@@ -83,7 +83,7 @@ func (r *DefaultReader) ReadRequest(req *http.Request, info *ServiceConf) (*serv
 	r.logger.I("Command: ", cmd)
 	token := val.Get(CfgInst.TokenField)
 	r.logger.D("Unescape token: ", token)
-	connId, err := r.decoder.DecodeToken(token)
+	connId, err := r.decoder.DecodeToken(opr, token)
 	if err != nil {
 		return nil, err
 	}
