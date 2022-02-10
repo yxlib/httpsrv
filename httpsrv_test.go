@@ -13,8 +13,16 @@ type Cmd1Request struct {
 	Port uint16 `json:"p"`
 }
 
+func (r *Cmd1Request) Reset() {
+	r.Port = 0
+}
+
 type Cmd1Response struct {
 	No uint16 `json:"n"`
+}
+
+func (r *Cmd1Response) Reset() {
+	r.No = 0
 }
 
 type Cmd2Request struct {
@@ -22,8 +30,16 @@ type Cmd2Request struct {
 	Port uint16 `json:"p"`
 }
 
+func (r *Cmd2Request) Reset() {
+	r.Port = 0
+}
+
 type Cmd2Response struct {
 	No uint16 `json:"n"`
+}
+
+func (r *Cmd2Response) Reset() {
+	r.No = 0
 }
 
 type ExampleService struct {
