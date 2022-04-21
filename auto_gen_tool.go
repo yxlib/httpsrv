@@ -46,7 +46,7 @@ func GenRegisterFileByCfg(srvCfg *Config, regFilePath string, regPackName string
 			idx := strings.LastIndex(reqStr, ".")
 			packSet.Add(reqStr[:idx])
 
-			respStr := cfg.Req
+			respStr := cfg.Resp
 			idx = strings.LastIndex(respStr, ".")
 			packSet.Add(respStr[:idx])
 		}
