@@ -4,17 +4,12 @@
 
 package httpsrv
 
-type OprConf struct {
-	Cmd     uint16 `json:"cmd"`
-	Req     string `json:"req"`
-	Resp    string `json:"resp"`
-	Handler string `json:"handler"`
-}
+import "github.com/yxlib/server"
 
 type ServiceConf struct {
-	Service    string              `json:"service"`
-	Mod        uint16              `json:"mod"`
-	MapOpr2Cfg map[string]*OprConf `json:"opr"`
+	Service    string                      `json:"service"`
+	Mod        uint16                      `json:"mod"`
+	MapOpr2Cfg map[string]*server.ProcConf `json:"opr"`
 }
 
 type Config struct {
@@ -27,5 +22,3 @@ type Config struct {
 	ResultField        string                  `json:"result_field"`
 	MapPatten2ServInfo map[string]*ServiceConf `json:"pattern"`
 }
-
-var CfgInst *Config = &Config{}

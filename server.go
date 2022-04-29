@@ -17,22 +17,22 @@ var (
 )
 
 type Server struct {
-	*server.Server
-	reader       Reader
-	writer       Writer
-	bAllowOrigin bool
-	ec           *yx.ErrCatcher
-	logger       *yx.Logger
+	*server.BaseServer
+	reader Reader
+	writer Writer
+	cfg    *Config
+	ec     *yx.ErrCatcher
+	logger *yx.Logger
 }
 
-func NewServer(r Reader, w Writer, bAllowOrigin bool) *Server {
+func NewServer(r Reader, w Writer, cfg *Config) *Server {
 	return &Server{
-		Server:       server.NewServer("httpsrv.Server", nil),
-		reader:       r,
-		writer:       w,
-		bAllowOrigin: bAllowOrigin,
-		ec:           yx.NewErrCatcher("httpsrv.Server"),
-		logger:       yx.NewLogger("httpsrv.Server"),
+		BaseServer: server.NewBaseServer("httpsrv.Server", nil),
+		reader:     r,
+		writer:     w,
+		cfg:        cfg,
+		ec:         yx.NewErrCatcher("httpsrv.Server"),
+		logger:     yx.NewLogger("httpsrv.Server"),
 	}
 }
 
@@ -63,7 +63,7 @@ func (s *Server) handleFunc(w http.ResponseWriter, req *http.Request) {
 
 	// write response
 	defer func() {
-		s.writer.WriteResponse(w, respCode, respResult, err)
+		s.writer.WriteResponse(w, respCode, respResult, err, s.cfg)
 	}()
 
 	defer s.ec.Catch("handleFunc", &err)
@@ -85,7 +85,7 @@ func (s *Server) handleFunc(w http.ResponseWriter, req *http.Request) {
 }
 
 func (s *Server) handleOrign(w http.ResponseWriter, req *http.Request) bool {
-	if !s.bAllowOrigin {
+	if !s.cfg.IsAllowOrigin {
 		return req.Method != "OPTIONS"
 	}
 
@@ -112,13 +112,7 @@ func (s *Server) createRequest(req *http.Request) (*server.Request, int, error) 
 	pattern := req.URL.Path
 	s.logger.I("Pattern: ", pattern)
 
-	info, ok := CfgInst.MapPatten2ServInfo[pattern]
-	if !ok {
-		return nil, RESP_CODE_UNKNOWN_PATTERN, ErrUnknownPattern
-	}
-
-	s.logger.I("Module: ", info.Mod)
-	request, err := s.reader.ReadRequest(req, info)
+	request, err := s.reader.ReadRequest(req, pattern, s.cfg)
 	if err != nil {
 		return nil, RESP_CODE_DECODE_FAILED, err
 	}

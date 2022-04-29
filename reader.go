@@ -35,7 +35,7 @@ type Reader interface {
 	// @param info, the config of the service which match the pattern
 	// @return *server.Request, a server.Request object.
 	// @return error, error.
-	ReadRequest(req *http.Request, info *ServiceConf) (*server.Request, error)
+	ReadRequest(req *http.Request, pattern string, cfg *Config) (*server.Request, error)
 }
 
 type DefaultReader struct {
@@ -52,9 +52,16 @@ func NewDefaultReader(decoder TokenDecoder) *DefaultReader {
 	}
 }
 
-func (r *DefaultReader) ReadRequest(req *http.Request, info *ServiceConf) (*server.Request, error) {
+func (r *DefaultReader) ReadRequest(req *http.Request, pattern string, cfg *Config) (*server.Request, error) {
 	var err error = nil
 	defer r.ec.DeferThrow("ReadRequest", &err)
+
+	info, ok := cfg.MapPatten2ServInfo[pattern]
+	if !ok {
+		return nil, ErrUnknownPattern
+	}
+
+	r.logger.I("Module: ", info.Mod)
 
 	// raw data
 	reqData, err := r.getReqData(req)
@@ -70,18 +77,18 @@ func (r *DefaultReader) ReadRequest(req *http.Request, info *ServiceConf) (*serv
 		return nil, err
 	}
 
-	opr := val.Get(CfgInst.OprField)
+	opr := val.Get(cfg.OprField)
 	r.logger.I("Operation: ", opr)
 
-	cfg, ok := info.MapOpr2Cfg[opr]
+	oprCfg, ok := info.MapOpr2Cfg[opr]
 	if !ok {
 		err = ErrNotSupportOpr
 		return nil, err
 	}
 
-	cmd := cfg.Cmd
+	cmd := oprCfg.Cmd
 	r.logger.I("Command: ", cmd)
-	token := val.Get(CfgInst.TokenField)
+	token := val.Get(cfg.TokenField)
 	r.logger.D("Unescape token: ", token)
 	connId, err := r.decoder.DecodeToken(opr, token)
 	if err != nil {
@@ -94,11 +101,11 @@ func (r *DefaultReader) ReadRequest(req *http.Request, info *ServiceConf) (*serv
 	request.Cmd = cmd
 	request.ConnId = connId
 
-	paramsStr := val.Get(CfgInst.ParamsField)
+	paramsStr := val.Get(cfg.ParamsField)
 	request.Payload = []byte(paramsStr)
 	r.logger.D("Unescape data: ", paramsStr)
 
-	snoStr := val.Get(CfgInst.SerialNoField)
+	snoStr := val.Get(cfg.SerialNoField)
 	sno, err := strconv.ParseUint(snoStr, 10, 16)
 	if err == nil {
 		request.SerialNo = uint16(sno)

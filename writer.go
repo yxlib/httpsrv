@@ -18,7 +18,7 @@ type Writer interface {
 	// @param respCode, the response code.
 	// @param respResult, the response result data.
 	// @param error, error.
-	WriteResponse(writer http.ResponseWriter, respCode int, respResult string, err error)
+	WriteResponse(writer http.ResponseWriter, respCode int, respResult string, err error, cfg *Config)
 }
 
 type DefaultWriter struct {
@@ -33,7 +33,7 @@ func NewDefaultWriter() *DefaultWriter {
 	}
 }
 
-func (w *DefaultWriter) WriteResponse(writer http.ResponseWriter, respCode int, respResult string, err error) {
+func (w *DefaultWriter) WriteResponse(writer http.ResponseWriter, respCode int, respResult string, err error, cfg *Config) {
 	writer.Header().Set("content-type", "application/x-www-form-urlencoded")
 
 	if err != nil {
@@ -41,7 +41,7 @@ func (w *DefaultWriter) WriteResponse(writer http.ResponseWriter, respCode int, 
 	}
 
 	respResult = url.PathEscape(respResult)
-	respData := CfgInst.CodeField + "=" + strconv.Itoa(respCode) + "&" + CfgInst.ResultField + "=" + string(respResult)
+	respData := cfg.CodeField + "=" + strconv.Itoa(respCode) + "&" + cfg.ResultField + "=" + string(respResult)
 	w.logger.D("Response raw data: ", respData)
 	w.logger.D()
 

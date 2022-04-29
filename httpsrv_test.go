@@ -106,7 +106,8 @@ func TestHttpSrv(t *testing.T) {
 	registerProtos()
 	registerServices()
 
-	err := yx.LoadJsonConf(CfgInst, "cfg_template.json", nil)
+	cfg := &Config{}
+	err := yx.LoadJsonConf(cfg, "cfg_template.json", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -114,9 +115,9 @@ func TestHttpSrv(t *testing.T) {
 	d := &TestTokenDecoder{}
 	r := NewDefaultReader(d)
 	w := NewDefaultWriter()
-	s := NewServer(r, w, CfgInst.IsAllowOrigin)
+	s := NewServer(r, w, cfg)
 	s.AddGlobalInterceptor(&server.JsonInterceptor{})
-	Builder.Build(s, CfgInst)
+	Builder.Build(s, cfg)
 
 	logger := yx.NewLogger("TestHttpSrv")
 	logger.I("###### http server start ######")

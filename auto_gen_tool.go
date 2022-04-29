@@ -12,8 +12,9 @@ import (
 )
 
 func GenServiceRegisterFile(cfgPath string, regFilePath string, regPackName string) {
-	yx.LoadJsonConf(CfgInst, cfgPath, nil)
-	GenRegisterFileByCfg(CfgInst, regFilePath, regPackName)
+	cfg := &Config{}
+	yx.LoadJsonConf(cfg, cfgPath, nil)
+	GenRegisterFileByCfg(cfg, regFilePath, regPackName)
 }
 
 // Generate the service register file.
@@ -28,36 +29,8 @@ func GenRegisterFileByCfg(srvCfg *Config, regFilePath string, regPackName string
 
 	defer f.Close()
 
-	f.WriteString("// This File auto generate by tool.\n")
-	f.WriteString("// Please do not modify.\n")
-	f.WriteString("// See httpsrv.GenRegisterFileByCfg().\n\n")
-	f.WriteString("package " + regPackName + "\n\n")
-	f.WriteString("import (\n")
-
-	packSet := yx.NewSet(yx.SET_TYPE_OBJ)
-	packSet.Add("github.com/yxlib/server")
-
-	for _, servCfg := range srvCfg.MapPatten2ServInfo {
-		servStr := servCfg.Service
-		idx := strings.LastIndex(servStr, ".")
-		packSet.Add(servStr[:idx])
-		for _, cfg := range servCfg.MapOpr2Cfg {
-			reqStr := cfg.Req
-			idx := strings.LastIndex(reqStr, ".")
-			packSet.Add(reqStr[:idx])
-
-			respStr := cfg.Resp
-			idx = strings.LastIndex(respStr, ".")
-			packSet.Add(respStr[:idx])
-		}
-	}
-
-	elements := packSet.GetElements()
-	for _, packName := range elements {
-		f.WriteString("    \"" + packName.(string) + "\"\n")
-	}
-
-	f.WriteString(")\n\n")
+	writePackage(f, regPackName)
+	writeImport(srvCfg.MapPatten2ServInfo, regPackName, f)
 
 	f.WriteString("// Auto generate by tool.\n")
 	f.WriteString("func RegisterServices() {\n")
@@ -77,20 +50,16 @@ func GenRegisterFileByCfg(srvCfg *Config, regFilePath string, regPackName string
 		servStr = servStr[idx+1:]
 		f.WriteString("    server.ServiceBinder.BindService(" + packName + ".New" + servStr + "())\n")
 		for opr, cfg := range servCfg.MapOpr2Cfg {
+			if cfg.Req == "" || cfg.Resp == "" {
+				continue
+			}
+
 			f.WriteString("    // " + opr + "\n")
 
-			reqStr := cfg.Req
-			idx := strings.LastIndex(reqStr, "/")
-			if idx >= 0 {
-				reqStr = reqStr[idx+1:]
-			}
+			reqStr := getFilePackageClassName(cfg.Req, regPackName)
 			f.WriteString("    server.ProtoBinder.RegisterProto(&" + reqStr + "{})\n")
 
-			respStr := cfg.Resp
-			idx = strings.LastIndex(respStr, "/")
-			if idx >= 0 {
-				respStr = respStr[idx+1:]
-			}
+			respStr := getFilePackageClassName(cfg.Resp, regPackName)
 			f.WriteString("    server.ProtoBinder.RegisterProto(&" + respStr + "{})\n")
 		}
 
@@ -99,4 +68,60 @@ func GenRegisterFileByCfg(srvCfg *Config, regFilePath string, regPackName string
 
 	f.WriteString("}")
 
+}
+
+func getFilePackageClassName(classReflectName string, regPackName string) string {
+	fullPackName := yx.GetFullPackageName(classReflectName)
+	filePackName := yx.GetFilePackageName(fullPackName)
+
+	if filePackName == regPackName {
+		return yx.GetClassName(classReflectName)
+	}
+
+	return yx.GetFilePackageClassName(classReflectName)
+}
+
+func writePackage(f *os.File, regPackName string) {
+	f.WriteString("// This File auto generate by tool.\n")
+	f.WriteString("// Please do not modify.\n")
+	f.WriteString("// See httpsrv.GenRegisterFileByCfg().\n\n")
+	f.WriteString("package " + regPackName + "\n\n")
+}
+
+func writeImport(mapPatten2ServInfo map[string]*ServiceConf, regPackName string, f *os.File) {
+	f.WriteString("import (\n")
+
+	packSet := yx.NewSet(yx.SET_TYPE_OBJ)
+	packSet.Add("github.com/yxlib/server")
+
+	for _, servCfg := range mapPatten2ServInfo {
+		fullPackName := yx.GetFullPackageName(servCfg.Service)
+		if fullPackName != "" {
+			packSet.Add(fullPackName)
+		}
+
+		for _, cfg := range servCfg.MapOpr2Cfg {
+			addProtoPackage(cfg.Req, regPackName, packSet)
+			addProtoPackage(cfg.Resp, regPackName, packSet)
+		}
+	}
+
+	elements := packSet.GetElements()
+	for _, packName := range elements {
+		f.WriteString("    \"" + packName.(string) + "\"\n")
+	}
+
+	f.WriteString(")\n\n")
+}
+
+func addProtoPackage(protoCfg string, regPackName string, packSet *yx.Set) {
+	if protoCfg == "" {
+		return
+	}
+
+	fullPackName := yx.GetFullPackageName(protoCfg)
+	filePackName := yx.GetFilePackageName(fullPackName)
+	if filePackName != regPackName {
+		packSet.Add(fullPackName)
+	}
 }
