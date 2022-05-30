@@ -13,6 +13,7 @@ type ServiceConf struct {
 }
 
 type Config struct {
+	Port               uint16                  `json:"port"`
 	IsAllowOrigin      bool                    `json:"allow_origin"`
 	OprField           string                  `json:"opr_field"`
 	TokenField         string                  `json:"token_field"`

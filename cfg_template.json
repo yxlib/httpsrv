@@ -1,4 +1,5 @@
 {
+    "port" : 8080,
     "allow_origin" : true,
     "opr_field" : "opr",
     "token_field" : "tk",
