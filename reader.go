@@ -64,7 +64,7 @@ func (r *DefaultReader) ReadRequest(req *http.Request, pattern string, cfg *Conf
 	r.logger.I("Module: ", info.Mod)
 
 	// raw data
-	reqData, err := r.getReqData(req)
+	reqData, err := GetReqData(req)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (r *DefaultReader) ReadRequest(req *http.Request, pattern string, cfg *Conf
 	return request, nil
 }
 
-func (r *DefaultReader) getReqData(req *http.Request) (string, error) {
+func GetReqData(req *http.Request) (string, error) {
 	reqData := ""
 	if req.Method == http.MethodGet {
 		reqData = req.URL.RawQuery
@@ -122,13 +122,13 @@ func (r *DefaultReader) getReqData(req *http.Request) (string, error) {
 	} else if req.Method == http.MethodPost {
 		d, err := ioutil.ReadAll(req.Body)
 		if err != nil {
-			return "", r.ec.Throw("getReqData", err)
+			return "", err
 		}
 
 		reqData = string(d)
 
 	} else {
-		return "", r.ec.Throw("getReqData", ErrNotSupportMethod)
+		return "", ErrNotSupportMethod
 	}
 
 	return reqData, nil
