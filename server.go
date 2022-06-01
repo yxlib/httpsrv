@@ -48,7 +48,7 @@ func (s *Server) Bind(pattern string, mod uint16, srv server.Service) {
 // Start the http server.
 // @param addr, the http address.
 // @return error, error.
-func (s *Server) Start(addr string) error {
+func (s *Server) Listen(addr string) error {
 	return http.ListenAndServe(addr, nil)
 }
 
