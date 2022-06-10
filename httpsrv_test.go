@@ -122,7 +122,7 @@ func TestHttpSrv(t *testing.T) {
 	logger := yx.NewLogger("TestHttpSrv")
 	logger.I("###### http server start ######")
 
-	s.Start(":8080")
+	s.Listen(":8080")
 
 	logger.I("###### http server stop ######")
 }
