@@ -66,11 +66,12 @@ func (s *Server) handleFunc(w http.ResponseWriter, req *http.Request) {
 		s.writer.WriteResponse(w, respCode, respResult, err, s.cfg)
 	}()
 
-	defer s.ec.Catch("handleFunc", &err)
+	// defer s.ec.Catch("handleFunc", &err)
 
 	// create request
 	request, code, err := s.createRequest(req)
 	if err != nil {
+		s.ec.Catch("handleFunc", &err)
 		respCode = code
 		return
 	}
