@@ -58,7 +58,8 @@ func (r *DefaultReader) ReadRequest(req *http.Request, pattern string, cfg *Conf
 
 	info, ok := cfg.MapPatten2ServInfo[pattern]
 	if !ok {
-		return nil, ErrUnknownPattern
+		err = ErrUnknownPattern
+		return nil, err
 	}
 
 	r.logger.I("Module: ", info.Mod)
