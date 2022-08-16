@@ -5,8 +5,10 @@
 package httpsrv
 
 import (
+	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/yxlib/server"
 	"github.com/yxlib/yx"
@@ -23,6 +25,9 @@ type Server struct {
 	cfg    *Config
 	ec     *yx.ErrCatcher
 	logger *yx.Logger
+
+	httpSrv     *http.Server
+	evtShutdown *yx.Event
 }
 
 func NewServer(r Reader, w Writer, cfg *Config) *Server {
@@ -33,6 +38,9 @@ func NewServer(r Reader, w Writer, cfg *Config) *Server {
 		cfg:        cfg,
 		ec:         yx.NewErrCatcher("httpsrv.Server"),
 		logger:     yx.NewLogger("httpsrv.Server"),
+
+		httpSrv:     nil,
+		evtShutdown: yx.NewEvent(),
 	}
 }
 
@@ -42,17 +50,45 @@ func NewServer(r Reader, w Writer, cfg *Config) *Server {
 // @param srv, the service.
 func (s *Server) Bind(pattern string, mod uint16, srv server.Service) {
 	s.AddService(srv, mod)
-	http.HandleFunc(pattern, s.handleFunc)
+	// http.HandleFunc(pattern, s.handleFunc)
 }
 
 // Start the http server.
 // @param addr, the http address.
 // @return error, error.
 func (s *Server) Listen(addr string) error {
-	return http.ListenAndServe(addr, nil)
+	// return http.ListenAndServe(addr, nil)
+
+	s.httpSrv = &http.Server{
+		Addr:    addr,
+		Handler: s,
+	}
+
+	err := s.httpSrv.ListenAndServe()
+	if err != nil {
+		if err != http.ErrServerClosed {
+			return err
+		}
+	}
+
+	s.evtShutdown.Wait()
+	return nil
 }
 
-func (s *Server) handleFunc(w http.ResponseWriter, req *http.Request) {
+func (s *Server) Shutdown(timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	err := s.httpSrv.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
+
+	s.evtShutdown.Send()
+	return nil
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if !s.handleOrign(w, req) {
 		return
 	}
