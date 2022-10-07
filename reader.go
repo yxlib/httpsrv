@@ -153,14 +153,14 @@ func ParseQuery(query string) (url.Values, error) {
 		if i := strings.Index(key, "="); i >= 0 {
 			key, value = key[:i], key[i+1:]
 		}
-		key, err1 := url.PathUnescape(key)
+		key, err1 := DecodeURIComponent(key)
 		if err1 != nil {
 			if err == nil {
 				err = err1
 			}
 			continue
 		}
-		value, err1 = url.PathUnescape(value)
+		value, err1 = DecodeURIComponent(value)
 		if err1 != nil {
 			if err == nil {
 				err = err1

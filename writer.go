@@ -6,7 +6,6 @@ package httpsrv
 
 import (
 	"net/http"
-	"net/url"
 	"strconv"
 
 	"github.com/yxlib/yx"
@@ -40,7 +39,7 @@ func (w *DefaultWriter) WriteResponse(writer http.ResponseWriter, respCode int, 
 		respResult = "\"" + err.Error() + "\""
 	}
 
-	respResult = url.PathEscape(respResult)
+	respResult = EncodeURIComponent(respResult)
 	respData := cfg.CodeField + "=" + strconv.Itoa(respCode) + "&" + cfg.ResultField + "=" + string(respResult)
 	w.logger.D("Response raw data: ", respData)
 	w.logger.D()
