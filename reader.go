@@ -23,10 +23,12 @@ var (
 
 type TokenDecoder interface {
 	// Decode the token.
+	// @param pattern, the url pattern
+	// @param opr, the operation
 	// @param token, the token.
 	// @return uint64, an id which can mark a client.
 	// @return error, error.
-	DecodeToken(opr string, token string) (uint64, error)
+	DecodeToken(pattern string, opr string, token string) (uint64, error)
 }
 
 type Reader interface {
@@ -94,7 +96,7 @@ func (r *DefaultReader) ReadRequest(req *http.Request, pattern string, cfg *Conf
 
 	var connId uint64 = 0
 	if r.decoder != nil {
-		connId, err = r.decoder.DecodeToken(opr, token)
+		connId, err = r.decoder.DecodeToken(pattern, opr, token)
 		if err != nil {
 			return nil, err
 		}
