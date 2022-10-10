@@ -91,9 +91,13 @@ func (r *DefaultReader) ReadRequest(req *http.Request, pattern string, cfg *Conf
 	r.logger.I("Command: ", cmd)
 	token := val.Get(cfg.TokenField)
 	r.logger.D("Unescape token: ", token)
-	connId, err := r.decoder.DecodeToken(opr, token)
-	if err != nil {
-		return nil, err
+
+	var connId uint64 = 0
+	if r.decoder != nil {
+		connId, err = r.decoder.DecodeToken(opr, token)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// build request
