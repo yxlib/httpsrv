@@ -50,17 +50,21 @@ func GenRegisterFileByCfg(srvCfg *Config, regFilePath string, regPackName string
 		servStr = servStr[idx+1:]
 		f.WriteString("    server.ServiceBinder.BindService(" + packName + ".New" + servStr + "())\n")
 		for opr, cfg := range servCfg.MapOpr2Cfg {
-			if cfg.Req == "" || cfg.Resp == "" {
-				continue
-			}
+			// if cfg.Req == "" && cfg.Resp == "" {
+			// 	continue
+			// }
 
 			f.WriteString("    // " + opr + "\n")
 
-			reqStr := getFilePackageClassName(cfg.Req, regPackName)
-			f.WriteString("    server.ProtoBinder.RegisterProto(&" + reqStr + "{})\n")
+			if cfg.Req != "" {
+				reqStr := getFilePackageClassName(cfg.Req, regPackName)
+				f.WriteString("    server.ProtoBinder.RegisterProto(&" + reqStr + "{})\n")
+			}
 
-			respStr := getFilePackageClassName(cfg.Resp, regPackName)
-			f.WriteString("    server.ProtoBinder.RegisterProto(&" + respStr + "{})\n")
+			if cfg.Resp != "" {
+				respStr := getFilePackageClassName(cfg.Resp, regPackName)
+				f.WriteString("    server.ProtoBinder.RegisterProto(&" + respStr + "{})\n")
+			}
 		}
 
 		f.WriteString("\n")
