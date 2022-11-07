@@ -6,20 +6,20 @@ package httpsrv
 
 import "github.com/yxlib/server"
 
-type ServiceConf struct {
-	Service    string                      `json:"service"`
-	Mod        uint16                      `json:"mod"`
-	MapOpr2Cfg map[string]*server.ProcConf `json:"opr"`
-}
+// type ServiceConf struct {
+// 	Service    string                      `json:"service"`
+// 	Mod        uint16                      `json:"mod"`
+// 	MapOpr2Cfg map[string]*server.ProcConf `json:"opr"`
+// }
 
 type Config struct {
-	Port               uint16                  `json:"port"`
-	IsAllowOrigin      bool                    `json:"allow_origin"`
-	OprField           string                  `json:"opr_field"`
-	TokenField         string                  `json:"token_field"`
-	SerialNoField      string                  `json:"serial_No_field"`
-	ParamsField        string                  `json:"params_field"`
-	CodeField          string                  `json:"code_field"`
-	ResultField        string                  `json:"result_field"`
-	MapPatten2ServInfo map[string]*ServiceConf `json:"pattern"`
+	Port          uint16         `json:"port"`
+	IsAllowOrigin bool           `json:"allow_origin"`
+	OprField      string         `json:"opr_field"`
+	TokenField    string         `json:"token_field"`
+	SerialNoField string         `json:"serial_No_field"`
+	ParamsField   string         `json:"params_field"`
+	CodeField     string         `json:"code_field"`
+	ResultField   string         `json:"result_field"`
+	Server        *server.Config `json:"server"`
 }

@@ -58,7 +58,7 @@ func (r *DefaultReader) ReadRequest(req *http.Request, pattern string, cfg *Conf
 	var err error = nil
 	defer r.ec.DeferThrow("ReadRequest", &err)
 
-	info, ok := cfg.MapPatten2ServInfo[pattern]
+	info, ok := cfg.Server.MapName2Service[pattern]
 	if !ok {
 		err = ErrUnknownPattern
 		return nil, err
@@ -83,7 +83,7 @@ func (r *DefaultReader) ReadRequest(req *http.Request, pattern string, cfg *Conf
 	opr := val.Get(cfg.OprField)
 	r.logger.I("Operation: ", opr)
 
-	oprCfg, ok := info.MapOpr2Cfg[opr]
+	oprCfg, ok := info.MapName2Proc[opr]
 	if !ok {
 		err = ErrNotSupportOpr
 		return nil, err

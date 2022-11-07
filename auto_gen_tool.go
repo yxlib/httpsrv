@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/yxlib/server"
 	"github.com/yxlib/yx"
 )
 
@@ -30,12 +31,12 @@ func GenRegisterFileByCfg(srvCfg *Config, regFilePath string, regPackName string
 	defer f.Close()
 
 	writePackage(f, regPackName)
-	writeImport(srvCfg.MapPatten2ServInfo, regPackName, f)
+	writeImport(srvCfg.Server.MapName2Service, regPackName, f)
 
 	f.WriteString("// Auto generate by tool.\n")
 	f.WriteString("func RegisterServices() {\n")
 
-	for pattern, servCfg := range srvCfg.MapPatten2ServInfo {
+	for pattern, servCfg := range srvCfg.Server.MapName2Service {
 		f.WriteString("    //===============================\n")
 		f.WriteString("    //        " + pattern + "\n")
 		f.WriteString("    //===============================\n")
@@ -49,7 +50,7 @@ func GenRegisterFileByCfg(srvCfg *Config, regFilePath string, regPackName string
 		packName := servStr[:idx]
 		servStr = servStr[idx+1:]
 		f.WriteString("    server.ServiceBinder.BindService(" + packName + ".New" + servStr + "())\n")
-		for opr, cfg := range servCfg.MapOpr2Cfg {
+		for opr, cfg := range servCfg.MapName2Proc {
 			// if cfg.Req == "" && cfg.Resp == "" {
 			// 	continue
 			// }
@@ -92,7 +93,7 @@ func writePackage(f *os.File, regPackName string) {
 	f.WriteString("package " + regPackName + "\n\n")
 }
 
-func writeImport(mapPatten2ServInfo map[string]*ServiceConf, regPackName string, f *os.File) {
+func writeImport(mapPatten2ServInfo map[string]*server.ServiceConf, regPackName string, f *os.File) {
 	f.WriteString("import (\n")
 
 	packSet := yx.NewSet(yx.SET_TYPE_OBJ)
@@ -104,7 +105,7 @@ func writeImport(mapPatten2ServInfo map[string]*ServiceConf, regPackName string,
 			packSet.Add(fullPackName)
 		}
 
-		for _, cfg := range servCfg.MapOpr2Cfg {
+		for _, cfg := range servCfg.MapName2Proc {
 			addProtoPackage(cfg.Req, regPackName, packSet)
 			addProtoPackage(cfg.Resp, regPackName, packSet)
 		}
