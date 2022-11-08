@@ -48,10 +48,10 @@ func NewServer(r Reader, w Writer, cfg *Config) *Server {
 // @param pattern, the http pattern.
 // @param mod, the module of the service.
 // @param srv, the service.
-func (s *Server) Bind(pattern string, mod uint16, srv server.Service) {
-	s.AddService(srv, mod)
-	// http.HandleFunc(pattern, s.handleFunc)
-}
+// func (s *Server) Bind(pattern string, mod uint16, srv server.Service) {
+// 	s.AddService(srv, mod)
+// 	// http.HandleFunc(pattern, s.handleFunc)
+// }
 
 // Start the http server.
 // @param addr, the http address.
@@ -105,16 +105,16 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// defer s.ec.Catch("handleFunc", &err)
 
 	// create request
-	request, code, err := s.createRequest(req)
+	request, err := s.reader.ReadRequest(req, s.cfg)
 	if err != nil {
 		s.ec.Catch("handleFunc", &err)
-		respCode = code
+		respCode = RESP_CODE_DECODE_FAILED
 		return
 	}
 
 	// handle
 	response := server.NewResponse(request)
-	err = s.HandleHttpRequest(request, response)
+	err = s.HandleRequest(request, response)
 
 	// result
 	respCode = int(response.Code)
@@ -142,17 +142,17 @@ func (s *Server) handleOrign(w http.ResponseWriter, req *http.Request) bool {
 	return true
 }
 
-func (s *Server) createRequest(req *http.Request) (*server.Request, int, error) {
-	var err error = nil
-	defer s.ec.DeferThrow("createRequest", &err)
+// func (s *Server) createRequest(req *http.Request) (*server.Request, int, error) {
+// 	var err error = nil
+// 	defer s.ec.DeferThrow("createRequest", &err)
 
-	pattern := req.URL.Path
-	s.logger.I("Pattern: ", pattern)
+// 	// pattern := req.URL.Path
+// 	// s.logger.I("Pattern: ", pattern)
 
-	request, err := s.reader.ReadRequest(req, pattern, s.cfg)
-	if err != nil {
-		return nil, RESP_CODE_DECODE_FAILED, err
-	}
+// 	request, err := s.reader.ReadRequest(req, s.cfg)
+// 	if err != nil {
+// 		return nil, RESP_CODE_DECODE_FAILED, err
+// 	}
 
-	return request, server.RESP_CODE_SUCCESS, nil
-}
+// 	return request, server.RESP_CODE_SUCCESS, nil
+// }

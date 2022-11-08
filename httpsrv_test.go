@@ -117,7 +117,7 @@ func TestHttpSrv(t *testing.T) {
 	w := NewDefaultWriter()
 	s := NewServer(r, w, cfg)
 	s.AddGlobalInterceptor(&server.JsonInterceptor{})
-	Builder.Build(s, cfg)
+	server.Builder.Build(s, cfg.Server)
 
 	logger := yx.NewLogger("TestHttpSrv")
 	logger.I("###### http server start ######")
@@ -128,5 +128,5 @@ func TestHttpSrv(t *testing.T) {
 }
 
 func TestGenRegFile(t *testing.T) {
-	GenServiceRegisterFile("cfg_template.json", "serv_reg.goxx", "httpsrv")
+	server.GenServiceRegisterFile("cfg_template.json", "serv_reg.goxx", "httpsrv")
 }

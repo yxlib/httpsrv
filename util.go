@@ -4,7 +4,69 @@
 
 package httpsrv
 
-import "net/url"
+import (
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
+)
+
+func GetReqData(req *http.Request) (string, error) {
+	reqData := ""
+	if req.Method == http.MethodGet {
+		reqData = req.URL.RawQuery
+
+	} else if req.Method == http.MethodPost {
+		d, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			return "", err
+		}
+
+		reqData = string(d)
+
+	} else {
+		return "", ErrNotSupportMethod
+	}
+
+	return reqData, nil
+}
+
+func ParseQuery(query string) (url.Values, error) {
+	var err error = nil
+	m := make(url.Values)
+
+	for query != "" {
+		key := query
+		if i := strings.IndexAny(key, "&;"); i >= 0 {
+			key, query = key[:i], key[i+1:]
+		} else {
+			query = ""
+		}
+		if key == "" {
+			continue
+		}
+		value := ""
+		if i := strings.Index(key, "="); i >= 0 {
+			key, value = key[:i], key[i+1:]
+		}
+		key, err1 := DecodeURIComponent(key)
+		if err1 != nil {
+			if err == nil {
+				err = err1
+			}
+			continue
+		}
+		value, err1 = DecodeURIComponent(value)
+		if err1 != nil {
+			if err == nil {
+				err = err1
+			}
+			continue
+		}
+		m[key] = append(m[key], value)
+	}
+	return m, err
+}
 
 const upperhex = "0123456789ABCDEF"
 
