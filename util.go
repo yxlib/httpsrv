@@ -6,6 +6,7 @@ package httpsrv
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -74,7 +75,8 @@ func DefaultWrite(writer http.ResponseWriter, cfg *Config, respObj *Response, er
 	}
 
 	respResult = EncodeURIComponent(respResult)
-	respData := cfg.CodeField + "=" + strconv.Itoa(int(respCode)) + "&" + cfg.ResultField + "=" + string(respResult)
+	// respData := cfg.CodeField + "=" + strconv.Itoa(int(respCode)) + "&" + cfg.ResultField + "=" + string(respResult)
+	respData := fmt.Sprintf("%s=%s&%s=%d&%s=%d&%s=%s", cfg.OprField, respObj.Opr, cfg.SerialNoField, respObj.SerialNo, cfg.CodeField, respCode, cfg.ResultField, respResult)
 	logger.D("Response raw data: ", respData)
 	logger.D()
 

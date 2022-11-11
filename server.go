@@ -17,15 +17,8 @@ var (
 	ErrUnknownPattern = errors.New("unknown path pattern")
 )
 
-//========================
-//      HttpListener
-//========================
-type HttpListener interface {
-	OnHttpReadPack(w http.ResponseWriter, req *http.Request) error
-}
-
 type Server struct {
-	listener     HttpListener
+	handler      http.Handler
 	bAllowOrigin bool
 	httpSrv      *http.Server
 	evtShutdown  *yx.Event
@@ -34,9 +27,9 @@ type Server struct {
 	logger *yx.Logger
 }
 
-func NewServer(l HttpListener) *Server {
+func NewServer() *Server {
 	return &Server{
-		listener:     l,
+		handler:      nil,
 		bAllowOrigin: false,
 		httpSrv:      nil,
 		evtShutdown:  yx.NewEvent(),
@@ -44,6 +37,11 @@ func NewServer(l HttpListener) *Server {
 		ec:     yx.NewErrCatcher("httpsrv.Server"),
 		logger: yx.NewLogger("httpsrv.Server"),
 	}
+}
+
+func (s *Server) SetHandler(handler http.Handler, bAllowOrigin bool) {
+	s.handler = handler
+	s.bAllowOrigin = bAllowOrigin
 }
 
 // Start the http server.
@@ -84,8 +82,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := s.listener.OnHttpReadPack(w, req)
-	s.ec.Catch("ServeHTTP", &err)
+	if s.handler != nil {
+		s.handler.ServeHTTP(w, req)
+	}
 }
 
 func (s *Server) handleOrign(w http.ResponseWriter, req *http.Request) bool {
