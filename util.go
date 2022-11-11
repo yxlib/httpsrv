@@ -5,11 +5,82 @@
 package httpsrv
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
+
+	"github.com/yxlib/yx"
 )
+
+var (
+	ErrNotSupportMethod = errors.New("not support http method")
+)
+
+var ec = yx.NewErrCatcher("httpsrv.util")
+var logger = yx.NewLogger("httpsrv.util")
+
+func DefaultRead(req *http.Request, cfg *Config) (*Request, error) {
+	var err error = nil
+	defer ec.DeferThrow("DefaultRead", &err)
+
+	// raw data
+	reqData, err := GetReqData(req)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.D("Request Raw Data: ", reqData)
+
+	// parse query
+	val, err := ParseQuery(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	reqObj := &Request{}
+
+	reqObj.Token = val.Get(cfg.TokenField)
+	logger.D("Unescape Token: ", reqObj.Token)
+
+	reqObj.Pattern = req.URL.Path
+	logger.I("Pattern: ", reqObj.Pattern)
+
+	reqObj.Opr = val.Get(cfg.OprField)
+	logger.I("Operation: ", reqObj.Opr)
+
+	snoStr := val.Get(cfg.SerialNoField)
+	sno, err := strconv.ParseUint(snoStr, 10, 16)
+	if err == nil {
+		reqObj.SerialNo = uint16(sno)
+		logger.I("SerialNo: ", reqObj.SerialNo)
+	}
+
+	reqObj.Params = val.Get(cfg.ParamsField)
+	logger.D("Unescape Data: ", reqObj.Params)
+
+	return reqObj, nil
+}
+
+func DefaultWrite(writer http.ResponseWriter, cfg *Config, respObj *Response, err error) error {
+	writer.Header().Set("content-type", "application/x-www-form-urlencoded")
+
+	respResult := respObj.Result
+	respCode := respObj.Code
+	if err != nil {
+		respResult = "\"" + err.Error() + "\""
+	}
+
+	respResult = EncodeURIComponent(respResult)
+	respData := cfg.CodeField + "=" + strconv.Itoa(int(respCode)) + "&" + cfg.ResultField + "=" + string(respResult)
+	logger.D("Response raw data: ", respData)
+	logger.D()
+
+	_, errWrite := writer.Write([]byte(respData))
+	return ec.Throw("DefaultWrite", errWrite)
+}
 
 func GetReqData(req *http.Request) (string, error) {
 	reqData := ""

@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/yxlib/server"
 	"github.com/yxlib/yx"
 )
 
@@ -18,47 +17,39 @@ var (
 	ErrUnknownPattern = errors.New("unknown path pattern")
 )
 
+//========================
+//      HttpListener
+//========================
+type HttpListener interface {
+	OnHttpReadPack(w http.ResponseWriter, req *http.Request) error
+}
+
 type Server struct {
-	*server.BaseServer
-	reader Reader
-	writer Writer
-	cfg    *Config
+	listener     HttpListener
+	bAllowOrigin bool
+	httpSrv      *http.Server
+	evtShutdown  *yx.Event
+
 	ec     *yx.ErrCatcher
 	logger *yx.Logger
-
-	httpSrv     *http.Server
-	evtShutdown *yx.Event
 }
 
-func NewServer(r Reader, w Writer, cfg *Config) *Server {
+func NewServer(l HttpListener) *Server {
 	return &Server{
-		BaseServer: server.NewBaseServer("httpsrv.Server", nil),
-		reader:     r,
-		writer:     w,
-		cfg:        cfg,
-		ec:         yx.NewErrCatcher("httpsrv.Server"),
-		logger:     yx.NewLogger("httpsrv.Server"),
+		listener:     l,
+		bAllowOrigin: false,
+		httpSrv:      nil,
+		evtShutdown:  yx.NewEvent(),
 
-		httpSrv:     nil,
-		evtShutdown: yx.NewEvent(),
+		ec:     yx.NewErrCatcher("httpsrv.Server"),
+		logger: yx.NewLogger("httpsrv.Server"),
 	}
 }
-
-// Bind pattern to service.
-// @param pattern, the http pattern.
-// @param mod, the module of the service.
-// @param srv, the service.
-// func (s *Server) Bind(pattern string, mod uint16, srv server.Service) {
-// 	s.AddService(srv, mod)
-// 	// http.HandleFunc(pattern, s.handleFunc)
-// }
 
 // Start the http server.
 // @param addr, the http address.
 // @return error, error.
 func (s *Server) Listen(addr string) error {
-	// return http.ListenAndServe(addr, nil)
-
 	s.httpSrv = &http.Server{
 		Addr:    addr,
 		Handler: s,
@@ -93,36 +84,12 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var err error = nil
-	respCode := int(0)
-	respResult := ""
-
-	// write response
-	defer func() {
-		s.writer.WriteResponse(w, respCode, respResult, err, s.cfg)
-	}()
-
-	// defer s.ec.Catch("handleFunc", &err)
-
-	// create request
-	request, err := s.reader.ReadRequest(req, s.cfg)
-	if err != nil {
-		s.ec.Catch("handleFunc", &err)
-		respCode = RESP_CODE_DECODE_FAILED
-		return
-	}
-
-	// handle
-	response := server.NewResponse(request)
-	err = s.HandleRequest(request, response)
-
-	// result
-	respCode = int(response.Code)
-	respResult = string(response.Payload)
+	err := s.listener.OnHttpReadPack(w, req)
+	s.ec.Catch("ServeHTTP", &err)
 }
 
 func (s *Server) handleOrign(w http.ResponseWriter, req *http.Request) bool {
-	if !s.cfg.IsAllowOrigin {
+	if !s.bAllowOrigin {
 		return req.Method != "OPTIONS"
 	}
 
@@ -141,18 +108,3 @@ func (s *Server) handleOrign(w http.ResponseWriter, req *http.Request) bool {
 
 	return true
 }
-
-// func (s *Server) createRequest(req *http.Request) (*server.Request, int, error) {
-// 	var err error = nil
-// 	defer s.ec.DeferThrow("createRequest", &err)
-
-// 	// pattern := req.URL.Path
-// 	// s.logger.I("Pattern: ", pattern)
-
-// 	request, err := s.reader.ReadRequest(req, s.cfg)
-// 	if err != nil {
-// 		return nil, RESP_CODE_DECODE_FAILED, err
-// 	}
-
-// 	return request, server.RESP_CODE_SUCCESS, nil
-// }
