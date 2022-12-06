@@ -33,7 +33,7 @@ func DefaultRead(req *http.Request, cfg *Config) (*Request, error) {
 		return nil, err
 	}
 
-	logger.D("Request Raw Data: ", reqData)
+	logger.Detail(yx.LOG_LV_DEBUG, []string{"[0] ", reqData, "\n"})
 
 	// parse query
 	val, err := ParseQuery(reqData)
@@ -44,23 +44,26 @@ func DefaultRead(req *http.Request, cfg *Config) (*Request, error) {
 	reqObj := &Request{}
 
 	reqObj.Token = val.Get(cfg.TokenField)
-	logger.D("Unescape Token: ", reqObj.Token)
+	// logger.D("Unescape Token: ", reqObj.Token)
 
 	reqObj.Pattern = req.URL.Path
-	logger.I("Pattern: ", reqObj.Pattern)
+	// logger.I("Pattern: ", reqObj.Pattern)
 
 	reqObj.Opr = val.Get(cfg.OprField)
-	logger.I("Operation: ", reqObj.Opr)
+	// logger.I("Operation: ", reqObj.Opr)
 
 	snoStr := val.Get(cfg.SerialNoField)
 	sno, err := strconv.ParseUint(snoStr, 10, 16)
 	if err == nil {
 		reqObj.SerialNo = uint16(sno)
-		logger.I("SerialNo: ", reqObj.SerialNo)
+		// logger.I("SerialNo: ", reqObj.SerialNo)
 	}
 
 	reqObj.Params = val.Get(cfg.ParamsField)
-	logger.D("Unescape Data: ", reqObj.Params)
+	// logger.D("Unescape Data: ", reqObj.Params)
+
+	logger.I("Pattern = ", reqObj.Pattern, ", Opr = ", reqObj.Opr, ", SNo = ", reqObj.SerialNo)
+	logger.Detail(yx.LOG_LV_DEBUG, []string{"[0] Token: ", reqObj.Token, "\n", "[1] Data: ", reqObj.Params, "\n"})
 
 	return reqObj, nil
 }
