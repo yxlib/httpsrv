@@ -36,7 +36,7 @@ func DefaultRead(req *http.Request, cfg *Config) (*Request, error) {
 		return nil, err
 	}
 
-	logger.Detail(yx.LOG_LV_DEBUG, []string{"[0] Request Raw: ", reqData, "\n"})
+	logger.Detail(yx.LOG_LV_DEBUG, []string{"[R] Request Raw: ", reqData, "\n"})
 
 	// parse query
 	val, err := ParseQuery(reqData)
@@ -65,8 +65,8 @@ func DefaultRead(req *http.Request, cfg *Config) (*Request, error) {
 	reqObj.Params = val.Get(cfg.ParamsField)
 	// logger.D("Unescape Data: ", reqObj.Params)
 
-	log := fmt.Sprint("Pattern = ", reqObj.Pattern, ", Opr = ", reqObj.Opr, ", SNo = ", reqObj.SerialNo)
-	logger.Detail(yx.LOG_LV_INFO, []string{"[0]", log, "\n"})
+	log := fmt.Sprint("[0] Pattern = ", reqObj.Pattern, ", Opr = ", reqObj.Opr, ", SNo = ", reqObj.SerialNo, "\n")
+	logger.Detail(yx.LOG_LV_INFO, []string{log})
 	logger.Detail(yx.LOG_LV_DEBUG, []string{"[1] Token: ", reqObj.Token, "\n", "[2] Data: ", reqObj.Params, "\n"})
 
 	return reqObj, nil
