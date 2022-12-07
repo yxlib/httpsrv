@@ -27,13 +27,16 @@ func DefaultRead(req *http.Request, cfg *Config) (*Request, error) {
 	var err error = nil
 	defer ec.DeferThrow("DefaultRead", &err)
 
+	logger.Detail(yx.LOG_LV_INFO, []string{"\n"})
+	logger.I("## Http Request Start ##")
+
 	// raw data
 	reqData, err := GetReqData(req)
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Detail(yx.LOG_LV_DEBUG, []string{"[0] ", reqData, "\n"})
+	logger.Detail(yx.LOG_LV_DEBUG, []string{"[0] Request Raw: ", reqData, "\n"})
 
 	// parse query
 	val, err := ParseQuery(reqData)
@@ -62,8 +65,9 @@ func DefaultRead(req *http.Request, cfg *Config) (*Request, error) {
 	reqObj.Params = val.Get(cfg.ParamsField)
 	// logger.D("Unescape Data: ", reqObj.Params)
 
-	logger.I("Pattern = ", reqObj.Pattern, ", Opr = ", reqObj.Opr, ", SNo = ", reqObj.SerialNo)
-	logger.Detail(yx.LOG_LV_DEBUG, []string{"[0] Token: ", reqObj.Token, "\n", "[1] Data: ", reqObj.Params, "\n"})
+	log := fmt.Sprint("Pattern = ", reqObj.Pattern, ", Opr = ", reqObj.Opr, ", SNo = ", reqObj.SerialNo)
+	logger.Detail(yx.LOG_LV_INFO, []string{"[0]", log, "\n"})
+	logger.Detail(yx.LOG_LV_DEBUG, []string{"[1] Token: ", reqObj.Token, "\n", "[2] Data: ", reqObj.Params, "\n"})
 
 	return reqObj, nil
 }
@@ -80,8 +84,9 @@ func DefaultWrite(writer http.ResponseWriter, cfg *Config, respObj *Response, er
 	respResult = EncodeURIComponent(respResult)
 	// respData := cfg.CodeField + "=" + strconv.Itoa(int(respCode)) + "&" + cfg.ResultField + "=" + string(respResult)
 	respData := fmt.Sprintf("%s=%s&%s=%d&%s=%d&%s=%s", cfg.OprField, respObj.Opr, cfg.SerialNoField, respObj.SerialNo, cfg.CodeField, respCode, cfg.ResultField, respResult)
-	logger.D("Response raw data: ", respData)
-	logger.D()
+
+	logger.Detail(yx.LOG_LV_DEBUG, []string{"[0] Response Raw: ", respData, "\n"})
+	logger.Detail(yx.LOG_LV_INFO, []string{"\n"})
 
 	_, errWrite := writer.Write([]byte(respData))
 	return ec.Throw("DefaultWrite", errWrite)
