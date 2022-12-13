@@ -27,8 +27,9 @@ func DefaultRead(req *http.Request, cfg *Config) (*Request, error) {
 	var err error = nil
 	defer ec.DeferThrow("DefaultRead", &err)
 
-	logger.Detail(yx.LOG_LV_INFO, []string{"\n"})
-	logger.I("## Http Request Start ##")
+	// logger.Detail(yx.LOG_LV_INFO, []string{"\n"})
+	logger.Ln()
+	logger.I("=====> Http Request Start:")
 
 	// raw data
 	reqData, err := GetReqData(req)
@@ -36,7 +37,9 @@ func DefaultRead(req *http.Request, cfg *Config) (*Request, error) {
 		return nil, err
 	}
 
-	logger.Detail(yx.LOG_LV_DEBUG, []string{"[R] Request Raw: ", reqData, "\n"})
+	logs := make([][]interface{}, 0)
+	logs = append(logs, yx.LogArgs("[R] Request Raw: ", reqData))
+	logger.Detail(yx.LOG_LV_DEBUG, logs)
 
 	// parse query
 	val, err := ParseQuery(reqData)
@@ -65,9 +68,14 @@ func DefaultRead(req *http.Request, cfg *Config) (*Request, error) {
 	reqObj.Params = val.Get(cfg.ParamsField)
 	// logger.D("Unescape Data: ", reqObj.Params)
 
-	log := fmt.Sprint("[0] Pattern = ", reqObj.Pattern, ", Opr = ", reqObj.Opr, ", SNo = ", reqObj.SerialNo, "\n")
-	logger.Detail(yx.LOG_LV_INFO, []string{log})
-	logger.Detail(yx.LOG_LV_DEBUG, []string{"[1] Token: ", reqObj.Token, "\n", "[2] Data: ", reqObj.Params, "\n"})
+	logs = make([][]interface{}, 0)
+	logs = append(logs, yx.LogArgs("[0] Pattern = ", reqObj.Pattern, ", Opr = ", reqObj.Opr, ", SNo = ", reqObj.SerialNo))
+	logger.Detail(yx.LOG_LV_INFO, logs)
+
+	logs = make([][]interface{}, 0)
+	logs = append(logs, yx.LogArgs("[1] Token: ", reqObj.Token))
+	logs = append(logs, yx.LogArgs("[2] Data: ", reqObj.Params))
+	logger.Detail(yx.LOG_LV_DEBUG, logs)
 
 	return reqObj, nil
 }
@@ -85,8 +93,11 @@ func DefaultWrite(writer http.ResponseWriter, cfg *Config, respObj *Response, er
 	// respData := cfg.CodeField + "=" + strconv.Itoa(int(respCode)) + "&" + cfg.ResultField + "=" + string(respResult)
 	respData := fmt.Sprintf("%s=%s&%s=%d&%s=%d&%s=%s", cfg.OprField, respObj.Opr, cfg.SerialNoField, respObj.SerialNo, cfg.CodeField, respCode, cfg.ResultField, respResult)
 
-	logger.Detail(yx.LOG_LV_DEBUG, []string{"[0] Response Raw: ", respData, "\n"})
-	logger.Detail(yx.LOG_LV_INFO, []string{"\n"})
+	logs := make([][]interface{}, 0)
+	logs = append(logs, yx.LogArgs("[0] Response Raw: ", respData))
+	logger.Detail(yx.LOG_LV_DEBUG, logs)
+
+	logger.Ln()
 
 	_, errWrite := writer.Write([]byte(respData))
 	return ec.Throw("DefaultWrite", errWrite)
