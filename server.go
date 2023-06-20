@@ -73,7 +73,7 @@ func (s *Server) Shutdown(timeout time.Duration) error {
 		return err
 	}
 
-	s.evtShutdown.Send()
+	s.evtShutdown.Close()
 	return nil
 }
 
